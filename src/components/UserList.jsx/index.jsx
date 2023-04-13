@@ -88,6 +88,22 @@ export default function UserList() {
     setPeople(data);
     setIsAscending((prevState) => !prevState);
   };
+
+  // const sortTable = (title) => {
+  //   setPeople((prevPeople) => {
+  //     const data = prevPeople.sort((a, b) =>
+  //       isAscending
+  //         ? a[title] < b[title]
+  //           ? -1
+  //           : 1
+  //         : a[title] > b[title]
+  //         ? -1
+  //         : 1
+  //     );
+  //     setIsAscending((prevIsAscending) => !prevIsAscending);
+  //     return data;
+  //   });
+  // };
   const [openStates, setOpenStates] = useState({});
 
   const toggleOpen = (id) => {
@@ -124,20 +140,16 @@ export default function UserList() {
   };
 
   const searchPeople = (people, query) => {
-    const filteredPeople = people.filter((person) =>
+    return people.filter((person) =>
       Object.keys(person).some((key) => {
-        if (key === "id") {
-          return person[key] == query;
-        } else if (typeof person[key] === "string") {
-          return person[key].toLowerCase().includes(query);
+        if (!Array.isArray(person[key])) {
+          return person[key].toString().toLowerCase().includes(query);
         } else if (Array.isArray(person[key])) {
           return searchPeople(person[key], query).length > 0;
         }
         return false;
       })
     );
-
-    return filteredPeople;
   };
   const filteredPeople = searchPeople(people, query);
 

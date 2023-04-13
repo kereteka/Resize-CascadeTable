@@ -89,21 +89,6 @@ export default function UserList() {
     setIsAscending((prevState) => !prevState);
   };
 
-  // const sortTable = (title) => {
-  //   setPeople((prevPeople) => {
-  //     const data = prevPeople.sort((a, b) =>
-  //       isAscending
-  //         ? a[title] < b[title]
-  //           ? -1
-  //           : 1
-  //         : a[title] > b[title]
-  //         ? -1
-  //         : 1
-  //     );
-  //     setIsAscending((prevIsAscending) => !prevIsAscending);
-  //     return data;
-  //   });
-  // };
   const [openStates, setOpenStates] = useState({});
 
   const toggleOpen = (id) => {

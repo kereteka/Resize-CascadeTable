@@ -1,7 +1,9 @@
-import React, { createRef, useEffect, useRef, useState } from "react";
-import { FaPlus, FaPlusSquare } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaPlus, FaPlusSquare, FaWindowMinimize } from "react-icons/fa";
+import { FiMaximize2 } from "react-icons/fi";
+
 import { HiOutlineTrash } from "react-icons/hi";
-import { useResizeDetector } from "react-resize-detector";
+//import { useResizeDetector } from "react-resize-detector";
 
 const Dashboard = () => {
   const [tabs, setTabs] = useState([
@@ -9,10 +11,9 @@ const Dashboard = () => {
     { name: "Tab 2", widgets: [] },
     { name: "Tab 3", widgets: [] },
   ]);
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [selectedWidget, setSelectedWidget] = useState("");
 
-  // const [width, setWidth] = useState(null);
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  //const [selectedWidget, setSelectedWidget] = useState("");
   // const [height, setHeight] = useState(null);
 
   // const sizeRef = useRef([]);
@@ -35,10 +36,10 @@ const Dashboard = () => {
   };
 
   const handleWidgetSelect = (event) => {
-    setSelectedWidget(event.target.value);
+    //setSelectedWidget(event.target.value);
     const newTabs = [...tabs];
     const newTab = { ...newTabs[activeTabIndex] };
-    newTab.widgets.push(event.target.value);
+    newTab.widgets.push({ name: event.target.value, isOpen: true });
     newTabs[activeTabIndex] = newTab;
     setTabs(newTabs);
   };
@@ -98,10 +99,21 @@ const Dashboard = () => {
   //   // };
   // }, [tabs, width]);
 
+  const handleMinimize = (index, widgetIndex) => {
+    const newTabs = [...tabs];
+    newTabs[index].widgets[widgetIndex].isOpen = false;
+    setTabs(newTabs);
+  };
+
+  const handleMaximize = (index, widgetIndex) => {
+    const newTabs = [...tabs];
+    newTabs[index].widgets[widgetIndex].isOpen = true;
+    setTabs(newTabs);
+  };
   return (
     <div className="h-screen flex flex-col">
       <div className="bg-gray-800 text-white py-4 flex justify-between items-center">
-        <div className="flex space-x-4 ml-4">
+        <div className="flex space-x-4 ml-4 w-[300px]">
           {tabs.map((tab, index) => (
             <>
               <div
@@ -169,29 +181,58 @@ const Dashboard = () => {
               </div>
             )}
             {/* overflow-scroll shrink */}
-            <div className="flex gap-5 ">
-              {tab.widgets.map((widget, widgetIndex) => (
-                <div
-                  // ref={(ref) => (sizeRef.current[widgetIndex] = ref)}
-                  key={widgetIndex}
-                  className="bg-white rounded-lg p-4 h-[300px]  border resize overflow-auto  "
-                  draggable
-                  onDragStart={(event) =>
-                    handleWidgetDragStart(event, widgetIndex)
-                  }
-                  onDragOver={(event) => event.preventDefault()}
-                  onDrop={(event) => handleWidgetDrop(event, widgetIndex)}
-                  onMouseDown={() => setSelectedWidget(widgetIndex)}
-                >
-                  {widget}
-                  <button
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-2 rounded-full mt-2"
-                    onClick={() => handleRemoveWidget(widgetIndex)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
+            <div className="flex gap-5 h-[70vh]">
+              {tab.widgets.map(
+                (widget, widgetIndex) =>
+                  widget.isOpen && (
+                    <div
+                      // ref={(ref) => (sizeRef.current[widgetIndex] = ref)}
+                      key={widgetIndex}
+                      className={`bg-white rounded-lg px-5 py-6 border h-[300px] resize overflow-auto w-[300px]
+                   `}
+                      draggable
+                      onDragStart={(event) =>
+                        handleWidgetDragStart(event, widgetIndex)
+                      }
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => handleWidgetDrop(event, widgetIndex)}
+                    >
+                      <div className="flex justify-between">
+                        {widget.name}
+                        <div className="flex gap-2 h-full">
+                          <FaWindowMinimize
+                            className=" -mt-1"
+                            onClick={() => handleMinimize(index, widgetIndex)}
+                          />
+                          <HiOutlineTrash
+                            color="red"
+                            onClick={() => handleRemoveWidget(widgetIndex)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )
+              )}
+            </div>
+            <div className="flex gap-4 text-white">
+              {tab.widgets.map(
+                (widget, widgetIndex) =>
+                  !widget.isOpen && (
+                    <div className="flex items-center justify-between w-[150px] bg-black rounded p-1">
+                      <p className="">{widget.name}</p>
+                      <div className="flex gap-1">
+                        <FiMaximize2
+                          className=" "
+                          onClick={() => handleMaximize(index, widgetIndex)}
+                        />
+                        <HiOutlineTrash
+                          color="red"
+                          onClick={() => handleRemoveWidget(widgetIndex)}
+                        />
+                      </div>
+                    </div>
+                  )
+              )}
             </div>
           </div>
         ))}

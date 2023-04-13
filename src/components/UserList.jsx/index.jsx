@@ -75,8 +75,18 @@ export default function UserList() {
     },
   ]);
 
+  const peopleWithoutChildren = (p) =>
+    p.map((person) => {
+      const { id, name, username, email, address } = person;
+      console.log(p.id);
+      return { id, name, username, email, address };
+    });
+
+  // Use the peopleWithoutChildren array as needed
+  console.log(peopleWithoutChildren);
   const [isAscending, setIsAscending] = useState(true);
   const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const sortTable = (title) => {
     let data = [];
@@ -91,31 +101,34 @@ export default function UserList() {
 
   const [openStates, setOpenStates] = useState({});
 
+  const findNodeById = (data, personId) => {
+    for (const node of data) {
+      if (node.id === personId) {
+        return node;
+      } else if (node.children && node.children.length > 0) {
+        const found = findNodeById(node.children, personId);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  };
+
   const toggleOpen = (id) => {
+    console.log(id, "iddddddd");
     setOpenStates((prevState) => {
       return {
         ...prevState,
         [id]: !prevState[id],
       };
     });
+    setIsOpen(true);
+    //  const n = findNodeById(,id)
   };
 
   const handleChange = (e, personId, property) => {
     const updatedPeople = [...people];
-
-    const findNodeById = (data, personId) => {
-      for (const node of data) {
-        if (node.id === personId) {
-          return node;
-        } else if (node.children && node.children.length > 0) {
-          const found = findNodeById(node.children, personId);
-          if (found) {
-            return found;
-          }
-        }
-      }
-      return null;
-    };
 
     const node = findNodeById(updatedPeople, personId);
     if (node) {
@@ -141,10 +154,14 @@ export default function UserList() {
   const Tab = ({ pep, level }) => {
     const indent = level * 5;
 
+    const handleChildrenVisibility = (e) => {
+      e.preventDefault();
+    };
+
     return (
       <>
         {pep.length !== 0 ? (
-          pep.map((p) => (
+          pep.map((p, i) => (
             <React.Fragment key={p.id}>
               <tr
                 className={`hover:bg-pink-200 cursor-pointer rounded-lg ${
@@ -157,26 +174,28 @@ export default function UserList() {
                     : ""
                 }`}
               >
-                {Object.entries(p).map(([key, value], i) => {
-                  if (key === "children" && Array.isArray(value)) {
-                    return (
-                      <td key={i}>
-                        {value.length > 0 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleOpen(p.id);
-                            }}
-                            className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
-                              openStates[p.id] ? "bg-red-500" : "bg-green-500"
-                            }`}
-                          >
-                            {openStates[p.id] ? <BiHide /> : <BiShowAlt />}
-                          </button>
-                        )}
-                      </td>
-                    );
-                  } else {
+                {Object.entries(p).map(
+                  ([key, value], i) => {
+                    // if (key === "children" && Array.isArray(value)) {
+                    //   return (
+                    //     <td key={i}>
+                    //       {value.length > 0 && (
+                    //         <button
+                    //           onClick={(e) => {
+                    //             e.stopPropagation();
+                    //             toggleOpen(p.id);
+                    //           }}
+                    //           className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
+                    //             openStates[p.id] ? "bg-red-500" : "bg-green-500"
+                    //           }`}
+                    //         >
+                    //           {openStates[p.id] ? <BiHide /> : <BiShowAlt />}
+                    //         </button>
+                    //       )}
+                    //     </td>
+                    //   );
+                    // } else {
+
                     return (
                       <td
                         key={i}
@@ -193,11 +212,36 @@ export default function UserList() {
                       </td>
                     );
                   }
-                })}
+                  // }
+                )}
+                {/* <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleOpen(p.id);
+                    peopleWithoutChildren(people);
+                  }}
+                  className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
+                    openStates[p.id] ? "bg-red-500" : "bg-green-500"
+                  }`}
+                >
+                  {openStates[p.id] ? <BiHide /> : <BiShowAlt />}
+                </button> */}
+                <button
+                  onClick={handleChildrenVisibility}
+                  className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
+                    openStates[p.id] ? "bg-red-500" : "bg-green-500"
+                  }`}
+                >
+                  {openStates[p.id] ? <BiHide /> : <BiShowAlt />}
+                </button>
               </tr>
-              {p.children && p.children.length > 0 && openStates[p.id] && (
-                <Tab pep={p.children} level={level + 1} />
-              )}
+
+              {isOpen &&
+                openStates[p.id] &&
+                people[p.id - 1] &&
+                people[p.id - 1].children && (
+                  <Tab pep={peopleWithoutChildren()} level={level + 1} />
+                )}
             </React.Fragment>
           ))
         ) : (
@@ -254,7 +298,10 @@ export default function UserList() {
           </tr>
         </thead>
         <tbody>
-          <Tab pep={filteredPeople} level={0} />
+          <Tab
+            pep={query === "" ? peopleWithoutChildren(people) : filteredPeople}
+            level={0}
+          />
         </tbody>
       </table>
     </div>

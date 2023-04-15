@@ -75,18 +75,22 @@ export default function UserList() {
     },
   ]);
 
+  const [renderPeople, setRenderPeople] = useState([]);
+  const [isAscending, setIsAscending] = useState(true);
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+
   const peopleWithoutChildren = (p) =>
     p.map((person) => {
       const { id, name, username, email, address } = person;
       console.log(p.id);
+      //setRenderPeople(...[id, name, username, email, address]);
       return { id, name, username, email, address };
     });
 
+  console.log(renderPeople, "rep");
   // Use the peopleWithoutChildren array as needed
   console.log(peopleWithoutChildren);
-  const [isAscending, setIsAscending] = useState(true);
-  const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
 
   const sortTable = (title) => {
     let data = [];
@@ -108,15 +112,16 @@ export default function UserList() {
       } else if (node.children && node.children.length > 0) {
         const found = findNodeById(node.children, personId);
         if (found) {
+          console.log(found, "found");
           return found;
         }
       }
     }
+
     return null;
   };
 
-  const toggleOpen = (id) => {
-    console.log(id, "iddddddd");
+  const toggleOpen = (id, level) => {
     setOpenStates((prevState) => {
       return {
         ...prevState,
@@ -124,7 +129,6 @@ export default function UserList() {
       };
     });
     setIsOpen(true);
-    //  const n = findNodeById(,id)
   };
 
   const handleChange = (e, personId, property) => {
@@ -154,10 +158,6 @@ export default function UserList() {
   const Tab = ({ pep, level }) => {
     const indent = level * 5;
 
-    const handleChildrenVisibility = (e) => {
-      e.preventDefault();
-    };
-
     return (
       <>
         {pep.length !== 0 ? (
@@ -176,26 +176,6 @@ export default function UserList() {
               >
                 {Object.entries(p).map(
                   ([key, value], i) => {
-                    // if (key === "children" && Array.isArray(value)) {
-                    //   return (
-                    //     <td key={i}>
-                    //       {value.length > 0 && (
-                    //         <button
-                    //           onClick={(e) => {
-                    //             e.stopPropagation();
-                    //             toggleOpen(p.id);
-                    //           }}
-                    //           className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
-                    //             openStates[p.id] ? "bg-red-500" : "bg-green-500"
-                    //           }`}
-                    //         >
-                    //           {openStates[p.id] ? <BiHide /> : <BiShowAlt />}
-                    //         </button>
-                    //       )}
-                    //     </td>
-                    //   );
-                    // } else {
-
                     return (
                       <td
                         key={i}
@@ -214,20 +194,12 @@ export default function UserList() {
                   }
                   // }
                 )}
-                {/* <button
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleOpen(p.id);
-                    peopleWithoutChildren(people);
+                    toggleOpen(p.id, level);
                   }}
-                  className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
-                    openStates[p.id] ? "bg-red-500" : "bg-green-500"
-                  }`}
-                >
-                  {openStates[p.id] ? <BiHide /> : <BiShowAlt />}
-                </button> */}
-                <button
-                  onClick={handleChildrenVisibility}
+                  //onClick={handleChildrenVisibility}
                   className={`focus:outline-none flex justify-center items-center rounded-lg px-2 ${
                     openStates[p.id] ? "bg-red-500" : "bg-green-500"
                   }`}
@@ -238,9 +210,13 @@ export default function UserList() {
 
               {isOpen &&
                 openStates[p.id] &&
-                people[p.id - 1] &&
-                people[p.id - 1].children && (
-                  <Tab pep={peopleWithoutChildren()} level={level + 1} />
+                findNodeById(people, p.id).children && (
+                  <Tab
+                    pep={peopleWithoutChildren(
+                      findNodeById(people, p.id).children
+                    )}
+                    level={level + 1}
+                  />
                 )}
             </React.Fragment>
           ))
